@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test - Smart Energy Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #666;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 API Test Suite</h1>
+    <p>Testing backend API at <strong>http://localhost:5000/api</strong></p>
+
+    <!-- Health Check -->
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <!-- Login Test -->
+    <div class="test-section">
+        <h2>2. Login Test</h2>
+        <p>Demo credentials: demo@energy.com / demo123</p>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <!-- Get Energy Data -->
+    <div class="test-section">
+        <h2>3. Get Energy Data</h2>
+        <button onclick="testEnergyData()">Get Energy Data (requires login)</button>
+        <div id="energyResult"></div>
+    </div>
+
+    <!-- Get Appliances -->
+    <div class="test-section">
+        <h2>4. Get Appliances</h2>
+        <button onclick="testAppliances()">Get Appliances (requires login)</button>
+        <div id="appliancesResult"></div>
+    </div>
+
+    <!-- Get Panels -->
+    <div class="test-section">
+        <h2>5. Get Solar Panels</h2>
+        <button onclick="testPanels()">Get Panels (requires login)</button>
+        <div id="panelsResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let authToken = null;
+
+        function displayResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = 'result' + (isError ? ' error' : '');
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                displayResult('healthResult', data);
+            } catch (error) {
+                displayResult('healthResult', { error: error.message }, true);
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@energy.com',
+                        password: 'demo123'
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success && data.token) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    displayResult('loginResult', {
+                        ...data,
+                        note: '✅ Token saved! You can now test protected endpoints.'
+                    });
+                } else {
+                    displayResult('loginResult', data, true);
+                }
+            } catch (error) {
+                displayResult('loginResult', { error: error.message }, true);
+            }
+        }
+
+        async function testEnergyData() {
+            if (!authToken) {
+                authToken = localStorage.getItem('authToken');
+            }
+
+            if (!authToken) {
+                displayResult('energyResult', { 
+                    error: 'Please login first to get auth token' 
+                }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/energy-data?limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                displayResult('energyResult', data);
+            } catch (error) {
+                displayResult('energyResult', { error: error.message }, true);
+            }
+        }
+
+        async function testAppliances() {
+            if (!authToken) {
+                authToken = localStorage.getItem('authToken');
+            }
+
+            if (!authToken) {
+                displayResult('appliancesResult', { 
+                    error: 'Please login first to get auth token' 
+                }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/appliances`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                displayResult('appliancesResult', data);
+            } catch (error) {
+                displayResult('appliancesResult', { error: error.message }, true);
+            }
+        }
+
+        async function testPanels() {
+            if (!authToken) {
+                authToken = localStorage.getItem('authToken');
+            }
+
+            if (!authToken) {
+                displayResult('panelsResult', { 
+                    error: 'Please login first to get auth token' 
+                }, true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/panel-health`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                displayResult('panelsResult', data);
+            } catch (error) {
+                displayResult('panelsResult', { error: error.message }, true);
+            }
+        }
+
+        // Auto-load token if exists
+        window.onload = () => {
+            authToken = localStorage.getItem('authToken');
+            if (authToken) {
+                console.log('✅ Auth token loaded from localStorage');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication System Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #374151;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #1e40af;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #059669;
+            border-left: 4px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #dc2626;
+            border-left: 4px solid #ef4444;
+        }
+
+        .session-info {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .session-info h3 {
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        .session-info p {
+            margin: 0.5rem 0;
+            color: #374151;
+        }
+
+        .session-info strong {
+            color: #10b981;
+        }
+
+        .dataset-view {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .demo-credentials {
+            background: #dbeafe;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .demo-credentials p {
+            margin: 0.25rem 0;
+            color: #1e40af;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-logged-in {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-logged-out {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-group .btn {
+            width: auto;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Authentication System Demo</h1>
+            <p>Test Login, Signup, and Logout flows with dynamic JSON dataset</p>
+        </div>
+
+        <div class="grid">
+            <!-- Login Card -->
+            <div class="card">
+                <h2>Login</h2>
+                <div class="demo-credentials">
+                    <p><strong>Demo Credentials:</strong></p>
+                    <p>User ID: demo@energy.com</p>
+                    <p>Password: demo123</p>
+                </div>
+                <div id="loginMessage"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>User ID (Email)</label>
+                        <input type="text" id="loginUserId" placeholder="demo@energy.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="demo123" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+
+            <!-- Signup Card -->
+            <div class="card">
+                <h2>Signup</h2>
+                <div id="signupMessage"></div>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label>User ID (Email)</label>
+                        <input type="email" id="signupUserId" placeholder="your@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="signupPassword" placeholder="Min 6 characters" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="signupName" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="signupLocation" placeholder="City" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Solar Capacity (kW)</label>
+                        <input type="number" id="signupSolar" placeholder="5" value="5">
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Create Account</button>
+                </form>
+            </div>
+
+            <!-- Session Status Card -->
+            <div class="card">
+                <h2>Current Session</h2>
+                <div id="sessionStatus">
+                    <div class="session-info">
+                        <p><strong>Status:</strong> <span class="status-badge status-logged-out">Logged Out</span></p>
+                        <p>No active session</p>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="handleLogout()">Logout</button>
+                    <button class="btn" onclick="refreshSession()">Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dataset View -->
+        <div class="card">
+            <h2>Live Dataset (JSON)</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="refreshDataset()">🔄 Refresh</button>
+                <button class="btn btn-secondary" onclick="exportDataset()">📥 Export JSON</button>
+                <button class="btn btn-danger" onclick="resetSystem()">🗑️ Reset System</button>
+            </div>
+            <div class="dataset-view" id="datasetView">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <script src="simpleAuthSystem.js"></script>
+    <script>
+        // Initialize
+        refreshSession();
+        refreshDataset();
+
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('loginUserId').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const result = authSystem.login(userId, password);
+            showMessage('loginMessage', result.message, result.success ? 'success' : 'error');
+
+            if (result.success) {
+                setTimeout(() => {
+                    refreshSession();
+                    refreshDataset();
+                    document.getElementById('loginForm').reset();
+                }, 1000);
+            }
+        });
+
+        // Signup Form Handler
+        document.getElementById('signupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('signupUserId').value;
+            const password = document.getElementById('signupPassword').value;
+            const name = document.getElementById('signupName').value;
+            const location = document.getElementById('signupLocation').value;
+            const solar = document.getElementById('signupSolar').value;
+
+            const result = authSystem.signup(userId, password, name, location, parseFloat(solar));
+            showMessage('signupMessage', result.message, result.success ? 'success' : 'error');
+
+            if (result.success) {
+                // User created but NOT logged in
+                // Redirect to login page after 2 seconds
+                setTimeout(() => {
+                    refreshSession();
+                    refreshDataset();
+                    document.getElementById('signupForm').reset();
+                    alert('Account created! Please login with your credentials.');
+                    // In a real app, this would redirect to login.html
+                    // window.location.href = 'login.html';
+                }, 2000);
+            }
+        });
+
+        // Logout Handler
+        function handleLogout() {
+            const result = authSystem.logout();
+            alert(result.message);
+            refreshSession();
+            refreshDataset();
+        }
+
+        // Refresh Session Display
+        function refreshSession() {
+            const session = authSystem.getSession();
+            const container = document.getElementById('sessionStatus');
+
+            if (session && session.sessionStatus === 'logged_in') {
+                container.innerHTML = `
+                    <div class="session-info">
+                        <h3>✅ Active Session</h3>
+                        <p><strong>Status:</strong> <span class="status-badge status-logged-in">Logged In</span></p>
+                        <p><strong>User ID:</strong> ${session.userId}</p>
+                        <p><strong>Name:</strong> ${session.name}</p>
+                        <p><strong>Location:</strong> ${session.location}</p>
+                        <p><strong>Solar:</strong> ${session.solarCapacity} kW</p>
+                        <p><strong>Login Time:</strong> ${new Date(session.loginTime).toLocaleString()}</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="session-info">
+                        <p><strong>Status:</strong> <span class="status-badge status-logged-out">Logged Out</span></p>
+                        <p>No active session</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Refresh Dataset Display
+        function refreshDataset() {
+            const json = authSystem.exportJSON();
+            document.getElementById('datasetView').textContent = json;
+        }
+
+        // Export Dataset
+        function exportDataset() {
+            const json = authSystem.exportJSON();
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `auth-dataset-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Dataset exported successfully!');
+        }
+
+        // Reset System
+        function resetSystem() {
+            if (confirm('Are you sure you want to reset the system? This will delete all users and sessions.')) {
+                authSystem.reset();
+                refreshSession();
+                refreshDataset();
+                alert('System reset complete!');
+            }
+        }
+
+        // Show Message
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

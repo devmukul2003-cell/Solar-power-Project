@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Status Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d1fae5; border-left: 4px solid #10b981; }
+        .error { background: #fee2e2; border-left: 4px solid #ef4444; }
+        .info { background: #dbeafe; border-left: 4px solid #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        pre {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Auth Status Checker</h1>
+        <div id="status"></div>
+        
+        <button onclick="checkStatus()">Check Status</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+        <button onclick="goToLogin()">Go to Login</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            document.getElementById('status').appendChild(div);
+        }
+
+        function checkStatus() {
+            document.getElementById('status').innerHTML = '';
+            
+            log('<h3>Current Status</h3>', 'info');
+            
+            // Check localStorage
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('currentUser');
+            
+            log(`<strong>Token:</strong> ${token ? '✅ EXISTS' : '❌ MISSING'}`, token ? 'success' : 'error');
+            
+            if (token) {
+                log(`<pre>${token.substring(0, 100)}...</pre>`, 'info');
+            }
+            
+            log(`<strong>User Data:</strong> ${user ? '✅ EXISTS' : '❌ MISSING'}`, user ? 'success' : 'error');
+            
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    log(`<pre>${JSON.stringify(userData, null, 2)}</pre>`, 'info');
+                } catch (e) {
+                    log(`Error parsing user data: ${e.message}`, 'error');
+                }
+            }
+            
+            // Check all localStorage keys
+            log('<h3>All localStorage Keys</h3>', 'info');
+            const keys = Object.keys(localStorage);
+            if (keys.length === 0) {
+                log('No keys in localStorage', 'error');
+            } else {
+                keys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    log(`<strong>${key}:</strong> ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`, 'info');
+                });
+            }
+            
+            // Check current URL
+            log('<h3>Current Page</h3>', 'info');
+            log(`<strong>URL:</strong> ${window.location.href}`, 'info');
+            log(`<strong>Protocol:</strong> ${window.location.protocol}`, 'info');
+            log(`<strong>Host:</strong> ${window.location.host}`, 'info');
+            
+            // Check if API is loaded
+            log('<h3>API Status</h3>', 'info');
+            log(`<strong>API loaded:</strong> ${typeof api !== 'undefined' ? '✅ YES' : '❌ NO'}`, typeof api !== 'undefined' ? 'success' : 'error');
+            
+            // Test localStorage write
+            log('<h3>localStorage Test</h3>', 'info');
+            try {
+                localStorage.setItem('test_key', 'test_value');
+                const testValue = localStorage.getItem('test_key');
+                localStorage.removeItem('test_key');
+                
+                if (testValue === 'test_value') {
+                    log('✅ localStorage is working', 'success');
+                } else {
+                    log('❌ localStorage read/write failed', 'error');
+                }
+            } catch (e) {
+                log(`❌ localStorage error: ${e.message}`, 'error');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            log('✅ Storage cleared', 'success');
+            setTimeout(checkStatus, 100);
+        }
+
+        function goToLogin() {
+            window.location.href = 'index.html';
+        }
+
+        function goToDashboard() {
+            window.location.href = 'enhanced-smart-dashboard.html';
+        }
+
+        // Auto-check on load
+        window.onload = checkStatus;
+    </script>
+</body>
+</html>

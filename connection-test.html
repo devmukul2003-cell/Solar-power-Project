@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - Frontend ↔ Backend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-icon {
+            font-size: 24px;
+        }
+
+        .status-icon.pending { opacity: 0.3; }
+        .status-icon.testing { animation: spin 1s linear infinite; }
+        .status-icon.success { color: #10b981; }
+        .status-icon.error { color: #ef4444; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        h3 {
+            color: #333;
+            margin: 0;
+        }
+
+        .test-result {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .test-result.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .test-result.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .summary {
+            text-align: center;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .summary.error {
+            background: #fef2f2;
+        }
+
+        .summary h2 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .summary.error h2 {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Connection Test</h1>
+        <p class="subtitle">Testing Frontend ↔ Backend Integration</p>
+
+        <div class="test-section">
+            <div class="test-header">
+                <span class="status-icon pending" id="icon1">⚪</span>
+                <h3>1. Backend Server</h3>
+            </div>
+            <div class="test-result" id="result1">Waiting to test...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <span class="status-icon pending" id="icon2">⚪</span>
+                <h3>2. MongoDB Database</h3>
+            </div>
+            <div class="test-result" id="result2">Waiting to test...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <span class="status-icon pending" id="icon3">⚪</span>
+                <h3>3. API Service Layer</h3>
+            </div>
+            <div class="test-result" id="result3">Waiting to test...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <span class="status-icon pending" id="icon4">⚪</span>
+                <h3>4. Authentication</h3>
+            </div>
+            <div class="test-result" id="result4">Waiting to test...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <span class="status-icon pending" id="icon5">⚪</span>
+                <h3>5. Data Loading</h3>
+            </div>
+            <div class="test-result" id="result5">Waiting to test...</div>
+        </div>
+
+        <button id="runTests" onclick="runAllTests()">🚀 Run Connection Tests</button>
+
+        <div id="summary" style="display: none;"></div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        let testsPassed = 0;
+        let testsFailed = 0;
+
+        function setStatus(testNum, status, message) {
+            const icon = document.getElementById(`icon${testNum}`);
+            const result = document.getElementById(`result${testNum}`);
+            
+            icon.className = `status-icon ${status}`;
+            result.className = `test-result ${status}`;
+            
+            if (status === 'testing') {
+                icon.textContent = '⏳';
+                result.textContent = 'Testing...';
+            } else if (status === 'success') {
+                icon.textContent = '✅';
+                result.textContent = message;
+                testsPassed++;
+            } else if (status === 'error') {
+                icon.textContent = '❌';
+                result.textContent = message;
+                testsFailed++;
+            }
+        }
+
+        async function test1_BackendServer() {
+            setStatus(1, 'testing');
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                
+                if (data.status === 'OK') {
+                    setStatus(1, 'success', `✅ Backend server is running\n\nResponse:\n${JSON.stringify(data, null, 2)}`);
+                    return true;
+                } else {
+                    setStatus(1, 'error', `❌ Unexpected response: ${JSON.stringify(data)}`);
+                    return false;
+                }
+            } catch (error) {
+                setStatus(1, 'error', `❌ Cannot connect to backend\n\nError: ${error.message}\n\nMake sure backend is running:\ncd backend\nnpm run dev`);
+                return false;
+            }
+        }
+
+        async function test2_MongoDB() {
+            setStatus(2, 'testing');
+            try {
+                const response = await fetch('http://localhost:5000/api/health');
+                const data = await response.json();
+                
+                if (data.database === 'Connected') {
+                    setStatus(2, 'success', `✅ MongoDB is connected\n\nDatabase: smart-energy-dashboard\nStatus: ${data.database}`);
+                    return true;
+                } else {
+                    setStatus(2, 'error', `❌ MongoDB not connected\n\nStatus: ${data.database}`);
+                    return false;
+                }
+            } catch (error) {
+                setStatus(2, 'error', `❌ Cannot check MongoDB status\n\nError: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function test3_APIService() {
+            setStatus(3, 'testing');
+            try {
+                if (typeof api === 'undefined') {
+                    setStatus(3, 'error', '❌ API service not loaded\n\napi.js is missing or not loaded');
+                    return false;
+                }
+                
+                if (api.baseURL === 'http://localhost:5000/api') {
+                    setStatus(3, 'success', `✅ API service initialized\n\nBase URL: ${api.baseURL}\nMethods available: login, signup, getEnergyData, etc.`);
+                    return true;
+                } else {
+                    setStatus(3, 'error', `❌ API service misconfigured\n\nBase URL: ${api.baseURL}`);
+                    return false;
+                }
+            } catch (error) {
+                setStatus(3, 'error', `❌ API service error\n\nError: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function test4_Authentication() {
+            setStatus(4, 'testing');
+            try {
+                const response = await api.login('demo@energy.com', 'demo123');
+                
+                if (response.success && response.token) {
+                    setStatus(4, 'success', `✅ Authentication working\n\nUser: ${response.user.email}\nToken: ${response.token.substring(0, 20)}...\nSession: ${response.user.sessionStatus}`);
+                    return true;
+                } else {
+                    setStatus(4, 'error', `❌ Authentication failed\n\nResponse: ${JSON.stringify(response)}`);
+                    return false;
+                }
+            } catch (error) {
+                setStatus(4, 'error', `❌ Authentication error\n\nError: ${error.message}\n\nMake sure demo user exists:\nnode backend/seed.js`);
+                return false;
+            }
+        }
+
+        async function test5_DataLoading() {
+            setStatus(5, 'testing');
+            try {
+                // Test multiple endpoints
+                const [energyData, appliances, panels] = await Promise.all([
+                    api.getEnergyData(null, null, 5),
+                    api.getAppliances(),
+                    api.getPanels()
+                ]);
+                
+                const results = [];
+                if (energyData.success) results.push(`Energy records: ${energyData.count}`);
+                if (appliances.success) results.push(`Appliances: ${appliances.count}`);
+                if (panels.success) results.push(`Solar panels: ${panels.count}`);
+                
+                if (results.length === 3) {
+                    setStatus(5, 'success', `✅ Data loading successful\n\n${results.join('\n')}\n\nAll API endpoints working!`);
+                    return true;
+                } else {
+                    setStatus(5, 'error', `❌ Some endpoints failed\n\n${results.join('\n')}`);
+                    return false;
+                }
+            } catch (error) {
+                setStatus(5, 'error', `❌ Data loading error\n\nError: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            testsPassed = 0;
+            testsFailed = 0;
+            
+            document.getElementById('runTests').disabled = true;
+            document.getElementById('summary').style.display = 'none';
+            
+            const test1 = await test1_BackendServer();
+            if (!test1) {
+                showSummary();
+                return;
+            }
+            
+            const test2 = await test2_MongoDB();
+            if (!test2) {
+                showSummary();
+                return;
+            }
+            
+            const test3 = await test3_APIService();
+            const test4 = await test4_Authentication();
+            const test5 = await test5_DataLoading();
+            
+            showSummary();
+        }
+
+        function showSummary() {
+            document.getElementById('runTests').disabled = false;
+            const summary = document.getElementById('summary');
+            summary.style.display = 'block';
+            
+            const total = testsPassed + testsFailed;
+            const allPassed = testsFailed === 0;
+            
+            summary.className = allPassed ? 'summary' : 'summary error';
+            summary.innerHTML = `
+                <h2>${allPassed ? '🎉 All Tests Passed!' : '⚠️ Some Tests Failed'}</h2>
+                <p><strong>${testsPassed}/${total}</strong> tests passed</p>
+                ${allPassed ? 
+                    '<p>✅ Frontend is successfully connected to backend!<br>✅ MongoDB is connected and working!<br>✅ You can now use the dashboard!</p>' :
+                    '<p>❌ Please fix the failed tests above<br>Check that backend is running and MongoDB is connected</p>'
+                }
+            `;
+        }
+    </script>
+</body>
+</html>

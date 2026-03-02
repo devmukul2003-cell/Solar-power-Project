@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Energy Data Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .realtime-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-control {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #059669;
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #dc2626;
+        }
+
+        .btn-export {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #1e40af;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .status-indicator.active {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        .live-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .live-stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .live-stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #10b981;
+            margin: 0.5rem 0;
+        }
+
+        .live-stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .data-table {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .summary-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">⚡ Real-Time Energy Simulator</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="realtime-demo.html" class="active">Live Demo</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="realtime-container">
+        <h1>Real-Time Energy Data Simulator</h1>
+        <p style="color: #6b7280; margin-bottom: 2rem;">
+            Live simulation of household energy usage and solar production, updating every minute
+        </p>
+
+        <div class="control-panel">
+            <h2>Control Panel</h2>
+            <div class="control-buttons">
+                <button class="btn-control btn-start" onclick="startSimulator()">▶️ Start Simulator</button>
+                <button class="btn-control btn-stop" onclick="stopSimulator()">⏹️ Stop Simulator</button>
+                <button class="btn-control btn-export" onclick="exportJSON()">📥 Export JSON</button>
+                <button class="btn-control btn-export" onclick="exportCSV()">📥 Export CSV</button>
+                <button class="btn-control" onclick="resetSimulator()">🔄 Reset</button>
+            </div>
+            <div class="status-bar">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Simulator stopped</span>
+                <span style="margin-left: auto;" id="lastUpdate">Never</span>
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>Total Solar Produced</h3>
+                <div class="value" id="totalSolar">0 kWh</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);">
+                <h3>Total Consumed</h3>
+                <div class="value" id="totalConsumed">0 kWh</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                <h3>Money Saved</h3>
+                <div class="value" id="totalSavings">₹0</div>
+            </div>
+            <div class="summary-card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                <h3>CO₂ Reduced</h3>
+                <div class="value" id="totalCO2">0 kg</div>
+            </div>
+        </div>
+
+        <div class="live-stats">
+            <div class="live-stat-card">
+                <div class="live-stat-label">Current Solar</div>
+                <div class="live-stat-value" id="currentSolar">0</div>
+                <div class="live-stat-label">kWh/min</div>
+            </div>
+            <div class="live-stat-card">
+                <div class="live-stat-label">Current Consumption</div>
+                <div class="live-stat-value" id="currentConsumption" style="color: #3b82f6;">0</div>
+                <div class="live-stat-label">kWh/min</div>
+            </div>
+            <div class="live-stat-card">
+                <div class="live-stat-label">Grid Usage</div>
+                <div class="live-stat-value" id="currentGrid" style="color: #ef4444;">0</div>
+                <div class="live-stat-label">kWh/min</div>
+            </div>
+            <div class="live-stat-card">
+                <div class="live-stat-label">Solar Coverage</div>
+                <div class="live-stat-value" id="solarCoverage" style="color: #fbbf24;">0%</div>
+                <div class="live-stat-label">of consumption</div>
+            </div>
+            <div class="live-stat-card">
+                <div class="live-stat-label">System Efficiency</div>
+                <div class="live-stat-value" id="efficiency" style="color: #8b5cf6;">0%</div>
+                <div class="live-stat-label">of capacity</div>
+            </div>
+            <div class="live-stat-card">
+                <div class="live-stat-label">Data Points</div>
+                <div class="live-stat-value" id="dataPoints" style="color: #6b7280;">0</div>
+                <div class="live-stat-label">collected</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Real-Time Energy Flow (Last Hour)</h3>
+            <canvas id="realtimeChart"></canvas>
+        </div>
+
+        <div class="data-table">
+            <h3>Latest Data Points (Last 10 entries)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Solar (kWh)</th>
+                        <th>Consumed (kWh)</th>
+                        <th>Grid (kWh)</th>
+                        <th>Saved (₹)</th>
+                        <th>CO₂ (kg)</th>
+                        <th>Coverage</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #6b7280;">
+                            No data yet. Start the simulator to begin collecting data.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="realtimeDataGenerator.js"></script>
+    <script src="realtime-demo.js"></script>
+</body>
+</html>

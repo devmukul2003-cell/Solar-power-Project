@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Theme & Language Toggle</title>
+    <link rel="stylesheet" href="enhanced-dashboard-styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background: var(--card-bg, white);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            background: #3b82f6;
+            color: white;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        [data-theme="dark"] .status {
+            background: #2a2a2a;
+        }
+        .success { color: #10b981; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 data-i18n="test_title">Theme & Language Toggle Test</h1>
+        
+        <div class="controls">
+            <button id="themeToggle">
+                <span id="themeIcon">🌙</span> Toggle Theme
+            </button>
+            <button id="languageToggle">
+                <span id="langIcon">🌐</span> <span id="langText">हिंदी</span>
+            </button>
+        </div>
+
+        <div id="status"></div>
+
+        <h2 data-i18n="dashboard_heading">Energy Dashboard</h2>
+        <p data-i18n="dashboard_subtitle">Real-time monitoring of your energy production and consumption</p>
+
+        <div class="status">
+            <strong>Current Theme:</strong> <span id="currentTheme">light</span><br>
+            <strong>Current Language:</strong> <span id="currentLang">en</span>
+        </div>
+
+        <h3 data-i18n="solar_produced">Solar Energy Produced</h3>
+        <p data-i18n="energy_consumed">Energy Consumed</p>
+        <p data-i18n="money_saved">Money Saved</p>
+        <p data-i18n="co2_reduced">CO₂ Reduced</p>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('status').appendChild(div);
+        }
+
+        // Theme Toggle
+        let currentTheme = 'light';
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('themeIcon').textContent = currentTheme === 'light' ? '🌙' : '☀️';
+            document.getElementById('currentTheme').textContent = currentTheme;
+            log(`✅ Theme switched to ${currentTheme} mode`, 'success');
+        });
+
+        // Language Toggle
+        document.getElementById('languageToggle').addEventListener('click', function() {
+            const newLang = i18n.toggleLanguage();
+            document.getElementById('currentLang').textContent = newLang;
+            document.getElementById('langText').textContent = newLang === 'en' ? 'हिंदी' : 'English';
+            log(`✅ Language switched to ${newLang === 'en' ? 'English' : 'Hindi'}`, 'success');
+        });
+
+        // Initial status
+        window.onload = () => {
+            log('Test page loaded', 'info');
+            log('Click buttons to test toggles', 'info');
+            
+            // Check if i18n is loaded
+            if (typeof i18n !== 'undefined') {
+                log('✅ i18n loaded successfully', 'success');
+            } else {
+                log('❌ i18n not loaded', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

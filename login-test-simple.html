@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Simple Login Test</h1>
+        
+        <input type="email" id="email" value="demo@energy.com" placeholder="Email">
+        <input type="password" id="password" value="demo123" placeholder="Password">
+        <button onclick="testLogin()">Login & Redirect</button>
+        
+        <h3>Console Log:</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('log').appendChild(div);
+            console.log(message);
+        }
+
+        async function testLogin() {
+            log('=== Starting Login Test ===', 'info');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log(`Email: ${email}`, 'info');
+            log(`Password: ${password.replace(/./g, '*')}`, 'info');
+            
+            try {
+                log('Step 1: Calling api.login()...', 'info');
+                const response = await api.login(email, password);
+                
+                log(`Step 2: Response received`, 'info');
+                log(`Success: ${response.success}`, response.success ? 'success' : 'error');
+                
+                if (response.success) {
+                    log(`Token: ${response.token.substring(0, 30)}...`, 'success');
+                    log(`User: ${response.user.email}`, 'success');
+                    
+                    log('Step 3: Checking localStorage...', 'info');
+                    const savedToken = localStorage.getItem('authToken');
+                    const savedUser = localStorage.getItem('currentUser');
+                    
+                    log(`Token in localStorage: ${savedToken ? 'YES' : 'NO'}`, savedToken ? 'success' : 'error');
+                    log(`User in localStorage: ${savedUser ? 'YES' : 'NO'}`, savedUser ? 'success' : 'error');
+                    
+                    if (savedToken) {
+                        log(`Token value: ${savedToken.substring(0, 30)}...`, 'success');
+                        
+                        // Save user data
+                        localStorage.setItem('currentUser', JSON.stringify(response.user));
+                        log('User data saved', 'success');
+                        
+                        log('Step 4: Redirecting in 2 seconds...', 'info');
+                        setTimeout(() => {
+                            log('Redirecting NOW to enhanced-smart-dashboard.html', 'success');
+                            window.location.href = 'enhanced-smart-dashboard.html';
+                        }, 2000);
+                    } else {
+                        log('ERROR: Token not saved!', 'error');
+                    }
+                } else {
+                    log(`Login failed: ${response.message}`, 'error');
+                }
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+
+        // Check initial state
+        window.onload = () => {
+            log('Page loaded', 'info');
+            log(`API loaded: ${typeof api !== 'undefined' ? 'YES' : 'NO'}`, 'info');
+            
+            const existingToken = localStorage.getItem('authToken');
+            log(`Existing token: ${existingToken ? 'YES' : 'NO'}`, 'info');
+            
+            if (existingToken) {
+                log('Clearing old token...', 'info');
+                localStorage.clear();
+                log('Storage cleared', 'success');
+            }
+        };
+    </script>
+</body>
+</html>

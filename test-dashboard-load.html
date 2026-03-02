@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Load Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .log {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Dashboard Load Test</h1>
+        <p>This simulates what happens when the dashboard loads</p>
+        
+        <button onclick="testDashboardLoad()">Test Dashboard Load</button>
+        <button onclick="clearAndTest()">Clear Storage & Test</button>
+        <button onclick="loginFirst()">Login First</button>
+        
+        <h3>Console Log:</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('log').appendChild(div);
+            console.log(message);
+        }
+
+        async function testDashboardLoad() {
+            log('=== Testing Dashboard Load ===', 'info');
+            
+            // Step 1: Check token
+            const token = localStorage.getItem('authToken');
+            log(`Step 1: Token exists: ${token ? 'YES' : 'NO'}`, token ? 'success' : 'error');
+            
+            if (!token) {
+                log('No token found. Need to login first!', 'error');
+                log('Click "Login First" button', 'info');
+                return;
+            }
+            
+            log(`Token: ${token.substring(0, 40)}...`, 'info');
+            
+            // Step 2: Check API
+            log('Step 2: Checking API...', 'info');
+            if (typeof api === 'undefined') {
+                log('API not loaded!', 'error');
+                return;
+            }
+            log('API loaded: YES', 'success');
+            
+            // Step 3: Call getCurrentUser
+            log('Step 3: Calling api.getCurrentUser()...', 'info');
+            try {
+                const response = await api.getCurrentUser();
+                log(`Response received`, 'info');
+                log(`Success: ${response.success}`, response.success ? 'success' : 'error');
+                
+                if (response.success) {
+                    log(`User: ${response.user.email}`, 'success');
+                    log(`User ID: ${response.user.userId}`, 'success');
+                    log(`Name: ${response.user.name}`, 'success');
+                    log('✅ Dashboard would load successfully!', 'success');
+                } else {
+                    log(`Error: ${response.message}`, 'error');
+                    log(`Status: ${response.status}`, 'error');
+                    
+                    if (response.status === 401) {
+                        log('Token is invalid or expired', 'error');
+                        log('Need to login again', 'error');
+                    }
+                }
+            } catch (error) {
+                log(`Exception: ${error.message}`, 'error');
+                log('This should NOT happen with new API code', 'error');
+            }
+        }
+
+        async function loginFirst() {
+            log('=== Logging in first ===', 'info');
+            
+            try {
+                const response = await api.login('demo@energy.com', 'demo123');
+                
+                if (response.success) {
+                    log('✅ Login successful!', 'success');
+                    log(`Token saved: ${localStorage.getItem('authToken') ? 'YES' : 'NO'}`, 'success');
+                    log('Now click "Test Dashboard Load"', 'info');
+                } else {
+                    log(`Login failed: ${response.message}`, 'error');
+                }
+            } catch (error) {
+                log(`Login error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAndTest() {
+            localStorage.clear();
+            log('Storage cleared', 'success');
+            setTimeout(testDashboardLoad, 100);
+        }
+
+        // Auto-check on load
+        window.onload = () => {
+            log('Test page loaded', 'info');
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                log('Found existing token, testing...', 'info');
+                setTimeout(testDashboardLoad, 500);
+            } else {
+                log('No token found. Click "Login First" to test full flow', 'info');
+            }
+        };
+    </script>
+</body>
+</html>

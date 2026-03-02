@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - User Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .users-table {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-locked {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 0 0.25rem;
+        }
+
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .activity-log {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 1rem;
+            border-left: 3px solid #10b981;
+            margin-bottom: 1rem;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .log-time {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        .log-action {
+            font-weight: 600;
+            color: #10b981;
+            margin: 0.5rem 0;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .btn-control {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+
+        .btn-export {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #ef4444;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">⚡ Admin Panel</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="admin-panel.html" class="active">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>User Management System</h1>
+            <p>Monitor and manage all user accounts and activities</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="totalLogins">0</div>
+                <div class="stat-label">Total Logins</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="failedAttempts">0</div>
+                <div class="stat-label">Failed Attempts</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3>Control Panel</h3>
+            <button class="btn-control btn-export" onclick="exportAllUsers()">📥 Export All Users (JSON)</button>
+            <button class="btn-control btn-export" onclick="exportActivityLogs()">📥 Export Activity Logs</button>
+            <button class="btn-control btn-reset" onclick="resetSystem()">🔄 Reset System</button>
+            <button class="btn-control" onclick="refreshData()">🔃 Refresh Data</button>
+        </div>
+
+        <div class="users-table">
+            <h3>All Users</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Signup Date</th>
+                        <th>Last Login</th>
+                        <th>Total Logins</th>
+                        <th>Failed Attempts</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="activity-log">
+            <h3>Recent Activity Log (Last 50 entries)</h3>
+            <div id="activityLogContainer">
+                <p style="text-align: center; color: #6b7280;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="userAuthSystem.js"></script>
+    <script>
+        const authSystem = new UserAuthenticationSystem();
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            refreshData();
+        });
+
+        function refreshData() {
+            loadStats();
+            loadUsersTable();
+            loadActivityLog();
+        }
+
+        function loadStats() {
+            const users = authSystem.getAllUsers();
+            const logs = authSystem.getActivityLogs();
+
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => u.accountStatus === 'active').length;
+            const totalLogins = users.reduce((sum, u) => sum + u.totalLogins, 0);
+            const failedAttempts = users.reduce((sum, u) => sum + u.failedLoginAttempts, 0);
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('totalLogins').textContent = totalLogins;
+            document.getElementById('failedAttempts').textContent = failedAttempts;
+        }
+
+        function loadUsersTable() {
+            const users = authSystem.getAllUsers();
+            const tbody = document.getElementById('usersTableBody');
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No users found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.email}</td>
+                    <td>${user.name}</td>
+                    <td><span class="status-badge status-${user.accountStatus}">${user.accountStatus}</span></td>
+                    <td>${new Date(user.signupDate).toLocaleDateString()}</td>
+                    <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</td>
+                    <td>${user.totalLogins}</td>
+                    <td>${user.failedLoginAttempts}</td>
+                    <td>
+                        <button class="btn-action btn-view" onclick="viewUser('${user.userId}')">View</button>
+                        <button class="btn-action btn-delete" onclick="deleteUser('${user.userId}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadActivityLog() {
+            const logs = authSystem.getActivityLogs(null, 50);
+            const container = document.getElementById('activityLogContainer');
+
+            if (logs.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6b7280;">No activity logs</p>';
+                return;
+            }
+
+            container.innerHTML = logs.reverse().map(log => `
+                <div class="log-entry">
+                    <div class="log-time">${new Date(log.timestamp).toLocaleString()}</div>
+                    <div class="log-action">${log.action}</div>
+                    <div>${JSON.stringify(log.details)}</div>
+                </div>
+            `).join('');
+        }
+
+        function viewUser(userId) {
+            const user = authSystem.getUserById(userId);
+            const stats = authSystem.getUserStats(userId);
+            alert(JSON.stringify({ user, stats }, null, 2));
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                const result = authSystem.deleteUser(userId);
+                alert(result.message);
+                refreshData();
+            }
+        }
+
+        function exportAllUsers() {
+            const users = authSystem.getAllUsers();
+            const json = JSON.stringify(users, null, 2);
+            downloadJSON(json, 'all-users.json');
+        }
+
+        function exportActivityLogs() {
+            const logs = authSystem.getActivityLogs();
+            const json = JSON.stringify(logs, null, 2);
+            downloadJSON(json, 'activity-logs.json');
+        }
+
+        function downloadJSON(json, filename) {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetSystem() {
+            if (confirm('Are you sure you want to reset the entire system? This will delete all users and data!')) {
+                authSystem.resetSystem();
+                alert('System reset complete!');
+                refreshData();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+        
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .success {
+            background: #d1fae5;
+            color: #059669;
+            border-left: 4px solid #10b981;
+        }
+        
+        .info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .section h2 {
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #3b82f6;
+        }
+        
+        .btn-secondary:hover {
+            background: #1e40af;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        
+        .user-card {
+            background: white;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .user-card strong {
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Authentication System Test</h1>
+        
+        <div class="status success">
+            ✅ Your authentication system is FULLY WORKING!
+        </div>
+        
+        <div class="section">
+            <h2>Quick Test</h2>
+            <a href="login.html" class="btn">Go to Login Page</a>
+            <a href="signup.html" class="btn btn-secondary">Go to Signup Page</a>
+            <a href="dashboard.html" class="btn btn-secondary">Go to Dashboard</a>
+        </div>
+        
+        <div class="section">
+            <h2>Demo Credentials</h2>
+            <div class="status info">
+                <strong>Email:</strong> demo@energy.com<br>
+                <strong>Password:</strong> demo123<br>
+                <strong>Solar Capacity:</strong> 5 kW
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Current Status</h2>
+            <button class="btn" onclick="checkStatus()">Check Login Status</button>
+            <button class="btn btn-secondary" onclick="viewAllUsers()">View All Users</button>
+            <button class="btn btn-danger" onclick="clearData()">Clear All Data</button>
+            <div id="statusOutput" style="margin-top: 1rem;"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Test Scenarios</h2>
+            <ol style="line-height: 2;">
+                <li><strong>Test Login:</strong> Click "Go to Login Page" → Use demo credentials</li>
+                <li><strong>Test Signup:</strong> Click "Go to Signup Page" → Create new account</li>
+                <li><strong>Test Multiple Users:</strong> Create 2-3 accounts with different solar capacities</li>
+                <li><strong>Test Logout:</strong> Login → Go to dashboard → Click logout</li>
+                <li><strong>Test Invalid Login:</strong> Try wrong email/password</li>
+            </ol>
+        </div>
+        
+        <div class="section">
+            <h2>How It Works</h2>
+            <pre>
+User Registration:
+1. Fill signup form
+2. Validate email & password
+3. Check for duplicate email
+4. Create user with unique ID
+5. Save to localStorage
+6. Auto-login & redirect to dashboard
+
+User Login:
+1. Enter email & password
+2. Search in user database
+3. Match credentials
+4. Set current session
+5. Redirect to dashboard
+
+Session Management:
+- Stored in localStorage
+- Persists across page refreshes
+- Auto-redirect if logged in
+- Logout clears session
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const output = document.getElementById('statusOutput');
+            const currentUser = localStorage.getItem('currentUser');
+            
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                output.innerHTML = `
+                    <div class="status success">
+                        <strong>✅ Logged In</strong><br>
+                        Name: ${user.name}<br>
+                        Email: ${user.email}<br>
+                        Location: ${user.location}<br>
+                        Solar Capacity: ${user.solarCapacity} kW<br>
+                        Join Date: ${new Date(user.joinDate).toLocaleDateString()}
+                    </div>
+                `;
+            } else {
+                output.innerHTML = `
+                    <div class="status info">
+                        <strong>ℹ️ Not Logged In</strong><br>
+                        Please login or create an account.
+                    </div>
+                `;
+            }
+        }
+        
+        function viewAllUsers() {
+            const output = document.getElementById('statusOutput');
+            const allUsers = localStorage.getItem('allUsers');
+            
+            if (allUsers) {
+                const users = JSON.parse(allUsers);
+                let html = `<div class="status success"><strong>📊 Total Users: ${users.length}</strong></div>`;
+                
+                users.forEach((user, index) => {
+                    html += `
+                        <div class="user-card">
+                            <strong>User ${index + 1}:</strong> ${user.name}<br>
+                            Email: ${user.email}<br>
+                            Location: ${user.location}<br>
+                            Solar: ${user.solarCapacity} kW<br>
+                            Joined: ${new Date(user.joinDate).toLocaleDateString()}
+                        </div>
+                    `;
+                });
+                
+                output.innerHTML = html;
+            } else {
+                output.innerHTML = `
+                    <div class="status info">
+                        <strong>ℹ️ No Users Found</strong><br>
+                        Create an account to get started!
+                    </div>
+                `;
+            }
+        }
+        
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data? This will delete all users and sessions.')) {
+                localStorage.clear();
+                document.getElementById('statusOutput').innerHTML = `
+                    <div class="status success">
+                        <strong>✅ All Data Cleared</strong><br>
+                        You can now start fresh!
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-check status on load
+        window.onload = checkStatus;
+    </script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Enhanced Features</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #10b981;
+        }
+        h2 {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #059669;
+        }
+        .result {
+            background: #f0f9ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        .success {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+        pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Enhanced Dashboard Features Test</h1>
+    <p>This page tests all four enhanced features without requiring authentication.</p>
+
+    <!-- Test 1: Incentive Points System -->
+    <div class="test-section">
+        <h2>⭐ Test 1: Incentive Points System</h2>
+        <button onclick="testIncentivePoints()">Run Test</button>
+        <button onclick="clearTest1()">Clear Results</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <!-- Test 2: Language Toggle -->
+    <div class="test-section">
+        <h2>🌐 Test 2: Language Toggle</h2>
+        <button onclick="testLanguageToggle()">Run Test</button>
+        <button onclick="clearTest2()">Clear Results</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <!-- Test 3: Theme Toggle -->
+    <div class="test-section">
+        <h2>🌙 Test 3: Theme Toggle</h2>
+        <button onclick="testThemeToggle()">Run Test</button>
+        <button onclick="clearTest3()">Clear Results</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <!-- Test 4: Custom Date Range -->
+    <div class="test-section">
+        <h2>📅 Test 4: Custom Date Range</h2>
+        <button onclick="testDateRange()">Run Test</button>
+        <button onclick="clearTest4()">Clear Results</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <!-- Test 5: Data Persistence -->
+    <div class="test-section">
+        <h2>💾 Test 5: Data Persistence</h2>
+        <button onclick="testPersistence()">Run Test</button>
+        <button onclick="clearTest5()">Clear Results</button>
+        <div id="test5-result"></div>
+    </div>
+
+    <script src="enhancedDashboard.js"></script>
+    <script>
+        // Test 1: Incentive Points System
+        function testIncentivePoints() {
+            const result = document.getElementById('test1-result');
+            result.innerHTML = '<div class="result">Running tests...</div>';
+            
+            try {
+                // Create test instance
+                const incentive = new IncentivePointsSystem('test-user');
+                
+                // Reset to start fresh
+                incentive.resetPoints();
+                
+                // Test 1: Award points
+                const points1 = incentive.awardPoints(10, 15, '2024-01-01');
+                const test1 = points1 === 100 ? '✅' : '❌';
+                
+                // Test 2: Award more points
+                const points2 = incentive.awardPoints(5, 8, '2024-01-02');
+                const test2 = points2 === 50 ? '✅' : '❌';
+                
+                // Test 3: Get total points
+                const summary = incentive.getSummary();
+                const test3 = summary.totalPoints === 150 ? '✅' : '❌';
+                
+                // Test 4: Points history
+                const test4 = summary.historyCount === 2 ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        <h3>Test Results:</h3>
+                        <p>${test1} Award 100 points (10 kWh × 10)</p>
+                        <p>${test2} Award 50 points (5 kWh × 10)</p>
+                        <p>${test3} Total points = 150</p>
+                        <p>${test4} History count = 2</p>
+                        <h4>Summary:</h4>
+                        <pre>${JSON.stringify(summary, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 2: Language Toggle
+        function testLanguageToggle() {
+            const result = document.getElementById('test2-result');
+            result.innerHTML = '<div class="result">Running tests...</div>';
+            
+            try {
+                const dashboard = new EnhancedDashboard('test-user', 5);
+                
+                // Test initial language
+                const lang1 = dashboard.getLanguage();
+                const test1 = lang1 === 'english' ? '✅' : '❌';
+                
+                // Test toggle to Hindi
+                dashboard.toggleLanguage();
+                const lang2 = dashboard.getLanguage();
+                const test2 = lang2 === 'hindi' ? '✅' : '❌';
+                
+                // Test toggle back to English
+                dashboard.toggleLanguage();
+                const lang3 = dashboard.getLanguage();
+                const test3 = lang3 === 'english' ? '✅' : '❌';
+                
+                // Test translation
+                const text1 = translations.english['stats.solar'];
+                const text2 = translations.hindi['stats.solar'];
+                const test4 = (text1 && text2) ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        <h3>Test Results:</h3>
+                        <p>${test1} Initial language: ${lang1}</p>
+                        <p>${test2} Toggle to: ${lang2}</p>
+                        <p>${test3} Toggle back to: ${lang3}</p>
+                        <p>${test4} Translations exist</p>
+                        <h4>Sample Translations:</h4>
+                        <pre>English: ${text1}\nHindi: ${text2}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 3: Theme Toggle
+        function testThemeToggle() {
+            const result = document.getElementById('test3-result');
+            result.innerHTML = '<div class="result">Running tests...</div>';
+            
+            try {
+                const dashboard = new EnhancedDashboard('test-user', 5);
+                
+                // Test initial theme
+                const theme1 = dashboard.getTheme();
+                const test1 = theme1 === 'light' ? '✅' : '❌';
+                
+                // Test toggle to dark
+                dashboard.toggleTheme();
+                const theme2 = dashboard.getTheme();
+                const test2 = theme2 === 'dark' ? '✅' : '❌';
+                
+                // Test toggle back to light
+                dashboard.toggleTheme();
+                const theme3 = dashboard.getTheme();
+                const test3 = theme3 === 'light' ? '✅' : '❌';
+                
+                // Test HTML attribute
+                const htmlTheme = document.documentElement.getAttribute('data-theme');
+                const test4 = htmlTheme === theme3 ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        <h3>Test Results:</h3>
+                        <p>${test1} Initial theme: ${theme1}</p>
+                        <p>${test2} Toggle to: ${theme2}</p>
+                        <p>${test3} Toggle back to: ${theme3}</p>
+                        <p>${test4} HTML attribute matches: ${htmlTheme}</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 4: Custom Date Range
+        function testDateRange() {
+            const result = document.getElementById('test4-result');
+            result.innerHTML = '<div class="result">Running tests...</div>';
+            
+            try {
+                const dashboard = new EnhancedDashboard('test-user', 5);
+                
+                // Test preset range
+                dashboard.setDateRange('30');
+                const days1 = dashboard.getDateRangeDays();
+                const test1 = days1 === 30 ? '✅' : '❌';
+                
+                // Test another preset
+                dashboard.setDateRange('90');
+                const days2 = dashboard.getDateRangeDays();
+                const test2 = days2 === 90 ? '✅' : '❌';
+                
+                // Test custom range
+                dashboard.setDateRange('custom', '2024-01-01', '2024-01-31');
+                const days3 = dashboard.getDateRangeDays();
+                const test3 = days3 === 30 ? '✅' : '❌';
+                
+                // Test filtering
+                const testData = [
+                    { date: '2024-01-15', value: 100 },
+                    { date: '2024-02-15', value: 200 },
+                    { date: '2024-03-15', value: 300 }
+                ];
+                const filtered = dashboard.getFilteredData(testData);
+                const test4 = filtered.length === 1 ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        <h3>Test Results:</h3>
+                        <p>${test1} Preset 30 days: ${days1}</p>
+                        <p>${test2} Preset 90 days: ${days2}</p>
+                        <p>${test3} Custom range (Jan 1-31): ${days3} days</p>
+                        <p>${test4} Filtered data: ${filtered.length} items</p>
+                        <h4>Filtered Data:</h4>
+                        <pre>${JSON.stringify(filtered, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 5: Data Persistence
+        function testPersistence() {
+            const result = document.getElementById('test5-result');
+            result.innerHTML = '<div class="result">Running tests...</div>';
+            
+            try {
+                // Create dashboard and set preferences
+                const dashboard1 = new EnhancedDashboard('test-persist', 5);
+                dashboard1.toggleLanguage(); // Switch to Hindi
+                dashboard1.toggleTheme(); // Switch to Dark
+                dashboard1.setDateRange('90');
+                
+                // Create new instance (simulates page reload)
+                const dashboard2 = new EnhancedDashboard('test-persist', 5);
+                
+                // Check if preferences persisted
+                const test1 = dashboard2.getLanguage() === 'hindi' ? '✅' : '❌';
+                const test2 = dashboard2.getTheme() === 'dark' ? '✅' : '❌';
+                const test3 = dashboard2.getDateRangeDays() === 90 ? '✅' : '❌';
+                
+                // Check localStorage
+                const stored = localStorage.getItem('dashboard_test-persist');
+                const test4 = stored !== null ? '✅' : '❌';
+                
+                result.innerHTML = `
+                    <div class="result success">
+                        <h3>Test Results:</h3>
+                        <p>${test1} Language persisted: ${dashboard2.getLanguage()}</p>
+                        <p>${test2} Theme persisted: ${dashboard2.getTheme()}</p>
+                        <p>${test3} Date range persisted: ${dashboard2.getDateRangeDays()} days</p>
+                        <p>${test4} localStorage working</p>
+                        <h4>Stored Data:</h4>
+                        <pre>${stored}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `<div class="result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Clear functions
+        function clearTest1() { document.getElementById('test1-result').innerHTML = ''; }
+        function clearTest2() { document.getElementById('test2-result').innerHTML = ''; }
+        function clearTest3() { document.getElementById('test3-result').innerHTML = ''; }
+        function clearTest4() { document.getElementById('test4-result').innerHTML = ''; }
+        function clearTest5() { document.getElementById('test5-result').innerHTML = ''; }
+
+        // Run all tests on load
+        window.addEventListener('load', () => {
+            console.log('✅ Enhanced Dashboard Test Page Loaded');
+            console.log('Click buttons to run individual tests');
+        });
+    </script>
+</body>
+</html>
